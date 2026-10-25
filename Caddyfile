@@ -1,0 +1,22 @@
+# Caddy 自动申请免费 SSL 证书并反向代理到 LunaTV
+# 只要将域名 A 记录解析到当前 VPS IP，Caddy 会自动申请并维护 HTTPS 证书
+
+{$DOMAIN:localhost} {
+    reverse_proxy moontv-core:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 开启 gzip/zstd 压缩
+    encode zstd gzip
+
+    # 基础安全头
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
